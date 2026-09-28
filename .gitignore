@@ -1,0 +1,10 @@
+# Allow-list: only the app files are tracked (keeps personal PDFs and IDE files out)
+*
+!.gitignore
+!README.md
+!index.html
+!manifest.json
+!sw.js
+!icon.svg
+!icon-192.png
+!icon-512.png

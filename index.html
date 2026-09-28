@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1e3a5f">
+    <meta name="description" content="Free Handyman Quote &amp; Invoice Maker for South Africa - create professional quotes and invoices, save as PDF and share on WhatsApp. Works offline.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Quote &amp; Invoice">
+    <title>Handyman Quote &amp; Invoice Maker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        :root {
+            --navy: #1e3a5f;
+            --blue: #2563eb;
+            --blue-dark: #1d4ed8;
+            --blue-soft: #eff6ff;
+            --green: #16a34a;
+            --whatsapp: #25d366;
+            --whatsapp-dark: #128c4b;
+            --red: #dc2626;
+            --bg: #eef2f7;
+            --card: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --radius: 16px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Keep focused fields clear of the sticky header and fixed bottom bar */
+        html {
+            scroll-padding-top: 90px;
+            scroll-padding-bottom: 190px;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer;
+        }
+
+        /* ---------- App bar ---------- */
+        .appbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+            color: #fff;
+            padding: calc(12px + var(--safe-top)) 16px 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        .appbar-inner {
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .appbar .brand-mark {
+            width: 44px;
+            height: 44px;
+            font-size: 17px;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .appbar-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .appbar-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .appbar-title p {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        .appbar-btn {
+            border: none;
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            border-radius: 12px;
+            min-height: 44px;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .appbar-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ---------- Brand mark (logo or business initials) ---------- */
+        .brand-mark {
+            flex-shrink: 0;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: var(--brand-color, var(--blue));
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .brand-mark.has-image {
+            background: #fff;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* ---------- Layout ---------- */
+        main {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 16px 16px calc(170px + var(--safe-bottom));
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        details.card > summary {
+            list-style: none;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        details.card > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.card > summary::after {
+            content: '▾';
+            margin-left: auto;
+            color: var(--muted);
+            transition: transform 0.2s;
+        }
+
+        details.card[open] > summary {
+            margin-bottom: 14px;
+        }
+
+        details.card[open] > summary::after {
+            transform: rotate(180deg);
+        }
+
+        .doc-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 6px;
+            margin-bottom: 14px;
+            background: #dbe3ee;
+            border-radius: var(--radius);
+        }
+
+        .doc-switch button {
+            min-height: 52px;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: #475569;
+            font-size: 17px;
+            font-weight: 700;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .doc-switch button[aria-pressed="true"] {
+            background: #fff;
+            color: var(--blue);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+        }
+
+        .summary-hint {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field label,
+        .mini-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .field .hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .input {
+            width: 100%;
+            min-height: 52px;
+            padding: 12px 14px;
+            border: 2px solid var(--line);
+            border-radius: 12px;
+            font: inherit;
+            font-size: 16px; /* 16px stops iOS zooming in on focus */
+            color: var(--text);
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        textarea.input {
+            resize: vertical;
+            min-height: 84px;
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ---------- Logo upload ---------- */
+        .logo-picker {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 14px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            background: #f8fafc;
+            text-align: left;
+            color: var(--text);
+        }
+
+        .logo-picker:active {
+            background: var(--blue-soft);
+            border-color: var(--blue);
+        }
+
+        .logo-picker .brand-mark {
+            width: 64px;
+            height: 64px;
+            font-size: 24px;
+        }
+
+        .logo-picker strong {
+            display: block;
+            font-size: 15px;
+        }
+
+        .logo-picker span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .link-btn {
+            border: none;
+            background: none;
+            color: var(--red);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 0 0;
+        }
+
+        /* ---------- Job items ---------- */
+        .item {
+            border: 2px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #fafbfc;
+        }
+
+        .item-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .item-no {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .icon-btn.danger {
+            background: #fee2e2;
+            color: var(--red);
+        }
+
+        .item .input {
+            margin-bottom: 10px;
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: stretch;
+            border: 2px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+
+        .stepper button {
+            width: 48px;
+            border: none;
+            background: #f1f5f9;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .stepper button:active {
+            background: #e2e8f0;
+        }
+
+        .stepper .input {
+            border: none;
+            border-radius: 0;
+            text-align: center;
+            margin: 0;
+            min-width: 0;
+            padding: 12px 4px;
+        }
+
+        .stepper .input:focus {
+            box-shadow: none;
+        }
+
+        .line-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px dashed #d1d5db;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .line-total strong {
+            font-size: 17px;
+            color: var(--navy);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            width: 100%;
+            min-height: 56px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            filter: brightness(0.95);
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .btn-navy {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp-dark);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--blue);
+            border: 2px dashed var(--blue);
+        }
+
+        .btn-ghost {
+            background: #f1f5f9;
+            color: var(--navy);
+        }
+
+        /* ---------- Calculator-style total ---------- */
+        .calc {
+            background: #0f172a;
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(15, 23, 42, 0.08);
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            color: #cbd5e1;
+            padding: 4px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .calc-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-top: 10px;
+            padding-top: 12px;
+            border-top: 1px solid #334155;
+        }
+
+        .calc-total span {
+            font-size: 15px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calc-total strong {
+            font-size: 36px;
+            font-weight: 800;
+            color: #4ade80;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #334155;
+            font-size: 15px;
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+
+        .switch input {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 52px;
+            height: 30px;
+            border-radius: 30px;
+            background: #475569;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .switch input::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 0.2s;
+        }
+
+        .switch input:checked {
+            background: var(--green);
+        }
+
+        .switch input:checked::after {
+            transform: translateX(22px);
+        }
+
+        /* ---------- Bottom action bar ---------- */
+        .bottombar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.12);
+            padding: 12px 16px calc(12px + var(--safe-bottom));
+        }
+
+        .bottombar-inner {
+            max-width: 640px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .bottombar-total {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 14px;
+            color: var(--muted);
+            padding: 0 4px;
+        }
+
+        .bottombar-total strong {
+            font-size: 20px;
+            color: var(--navy);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bottombar .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ---------- Quote / invoice sheet (preview + PDF) ---------- */
+        #preview {
+            padding: 16px 12px calc(160px + var(--safe-bottom));
+        }
+
+        .sheet {
+            background: #fff;
+            color: #1f2937;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 28px 22px;
+            border-radius: 6px;
+            box-shadow: 0 6px 30px rgba(15, 23, 42, 0.15);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .q-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 18px;
+            border-bottom: 4px solid var(--blue);
+            margin-bottom: 20px;
+        }
+
+        .q-brand {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            min-width: 0;
+        }
+
+        .q-brand .brand-mark {
+            width: 72px;
+            height: 72px;
+            font-size: 28px;
+            border-radius: 16px;
+        }
+
+        .q-brand h2 {
+            font-size: 22px;
+            color: var(--navy);
+            line-height: 1.2;
+            margin-bottom: 4px;
+            overflow-wrap: anywhere;
+        }
+
+        .q-brand p {
+            color: var(--muted);
+            font-size: 13px;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+
+        .q-title {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .q-title h1 {
+            font-size: 28px;
+            letter-spacing: 3px;
+            color: var(--blue);
+            margin-bottom: 6px;
+        }
+
+        .q-meta {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .q-meta b {
+            color: #1f2937;
+        }
+
+        .q-billto {
+            background: #f8fafc;
+            border-left: 4px solid var(--navy);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .q-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .q-billto strong {
+            font-size: 16px;
+            color: var(--navy);
+        }
+
+        .q-billto p {
+            white-space: pre-line;
+            color: #4b5563;
+        }
+
+        .q-table-wrap {
+            overflow-x: auto;
+        }
+
+        .q-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+
+        .q-table th {
+            background: var(--navy);
+            color: #fff;
+            padding: 10px 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .q-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+
+        .q-table tbody tr:nth-child(even) td {
+            background: #f8fafc;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .q-table .num {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .q-totals {
+            margin-left: auto;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .q-totals div {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .q-totals .grand {
+            margin-top: 6px;
+            background: var(--navy);
+            color: #fff;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: 800;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .q-notes {
+            margin-top: 24px;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+        }
+
+        .q-notes p {
+            white-space: pre-line;
+        }
+
+        .q-foot {
+            margin-top: 28px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .q-foot strong {
+            display: block;
+            color: var(--navy);
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        /* ---------- Toast ---------- */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(180px + var(--safe-bottom));
+            transform: translateX(-50%) translateY(20px);
+            background: #111827;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            max-width: calc(100% - 32px);
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 420px) {
+            .q-head {
+                flex-direction: column;
+            }
+            .q-title {
+                text-align: left;
+            }
+            .sheet {
+                padding: 20px 14px;
+                font-size: 13px;
+            }
+            .calc-total strong {
+                font-size: 30px;
+            }
+            .q-table th,
+            .q-table td {
+                padding: 8px 4px;
+                font-size: 12px;
+            }
+            .q-table th:first-child,
+            .q-table td:first-child {
+                display: none;
+            }
+        }
+
+        /* ---------- Print / Save as PDF: only the quote / invoice sheet ---------- */
+        @page {
+            size: A4;
+            margin: 14mm;
+        }
+
+        @media print {
+            html, body {
+                background: #fff;
+            }
+            .appbar,
+            #editor,
+            .bottombar,
+            .toast {
+                display: none !important;
+            }
+            #preview {
+                display: block !important;
+                padding: 0;
+            }
+            .sheet {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+                max-width: none;
+                font-size: 12.5px;
+            }
+            .q-head {
+                flex-direction: row;
+            }
+            .q-title {
+                text-align: right;
+            }
+            .q-table-wrap {
+                overflow: visible;
+            }
+            .q-table tr,
+            .q-totals,
+            .q-notes {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand-mark" id="appbarMark"></div>
+        <div class="appbar-title">
+            <h1 id="appbarName">Quote &amp; Invoice Maker</h1>
+            <p id="appbarSub">Professional quotes &amp; invoices</p>
+        </div>
+        <button type="button" class="appbar-btn" id="installBtn" hidden>⬇ Install</button>
+        <button type="button" class="appbar-btn" id="newQuoteBtn">＋ New</button>
+    </div>
+</header>
+
+<!-- ================= EDITOR ================= -->
+<main id="editor">
+
+    <div class="doc-switch" role="group" aria-label="Document type">
+        <button type="button" data-doc="quote" aria-pressed="true">📝 Quote</button>
+        <button type="button" data-doc="invoice" aria-pressed="false">🧾 Invoice</button>
+    </div>
+
+    <details class="card" id="businessCard">
+        <summary class="card-title">
+            🏢 Your Business
+            <span class="summary-hint" id="businessHint"></span>
+        </summary>
+
+        <div class="field">
+            <label for="businessName">Business name</label>
+            <input class="input" type="text" id="businessName" data-bind="businessName"
+                   placeholder="e.g. Sipho's Handyman Services" autocomplete="organization">
+        </div>
+
+        <div class="field">
+            <span class="mini-label">Logo</span>
+            <button type="button" class="logo-picker" id="logoPicker">
+                <div class="brand-mark" id="logoPreview"></div>
+                <div>
+                    <strong id="logoPickerTitle">Tap to upload your logo</strong>
+                    <span id="logoPickerSub">No logo? Your business initials are used instead.</span>
+                </div>
+            </button>
+            <input type="file" id="logoInput" accept="image/*" hidden>
+            <button type="button" class="link-btn" id="removeLogoBtn" hidden>Remove logo</button>
+        </div>
+
+        <div class="field">
+            <label for="contactDetails">Contact details</label>
+            <textarea class="input" id="contactDetails" data-bind="contactDetails"
+                      placeholder="Phone: 082 123 4567&#10;Email: you@example.co.za&#10;Area: Soweto, Johannesburg"></textarea>
+        </div>
+
+        <div class="field">
+            <label for="vatNumber">VAT number <small>(optional)</small></label>
+            <input class="input" type="text" id="vatNumber" data-bind="vatNumber" placeholder="4XXXXXXXXX" inputmode="numeric">
+        </div>
+
+        <div class="field">
+            <label for="notes">Banking details / terms <small>(shown on quotes &amp; invoices)</small></label>
+            <textarea class="input" id="notes" data-bind="notes"
+                      placeholder="Bank: FNB&#10;Acc: 62XXXXXXXXX  Branch: 250655&#10;Please use the invoice number as reference."></textarea>
+        </div>
+    </details>
+
+    <section class="card">
+        <h2 class="card-title">👤 Client</h2>
+        <div class="field">
+            <label for="clientName">Client name</label>
+            <input class="input" type="text" id="clientName" data-bind="clientName" placeholder="e.g. Mrs Naidoo" autocomplete="off">
+        </div>
+        <div class="field">
+            <label for="clientPhone">Client WhatsApp number</label>
+            <input class="input" type="tel" id="clientPhone" data-bind="clientPhone" placeholder="082 123 4567" inputmode="tel" autocomplete="off">
+            <div class="hint">SA numbers like 082… are converted to +27 automatically.</div>
+        </div>
+        <div class="field">
+            <label for="clientAddress">Job address</label>
+            <textarea class="input" id="clientAddress" data-bind="clientAddress" placeholder="12 Main Road, Durbanville, Cape Town"></textarea>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="card-title" id="docCardTitle">📝 Quote</h2>
+        <div class="field">
+            <label for="docNumber" id="docNumberLabel">Quote number</label>
+            <input class="input" type="text" id="docNumber" placeholder="QT-001">
+        </div>
+        <div class="row-2">
+            <div class="field">
+                <label for="quoteDate" id="docDateLabel">Quote date</label>
+                <input class="input" type="date" id="quoteDate" data-bind="quoteDate">
+            </div>
+            <div class="field" id="dueField">
+                <label for="validUntil" id="docDueLabel">Valid until</label>
+                <input class="input" type="date" id="validUntil" data-bind="validUntil">
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="card-title">🛠️ Job Items</h2>
+        <div id="items"></div>
+        <button type="button" class="btn btn-outline" id="addItemBtn">＋ Add Item</button>
+    </section>
+
+    <section class="calc" aria-live="polite">
+        <div class="calc-row"><span>Subtotal</span><span id="calcSubtotal">R 0.00</span></div>
+        <div class="calc-row" id="calcVatRow" hidden><span>VAT (15%)</span><span id="calcVat">R 0.00</span></div>
+        <div class="calc-total"><span>Total</span><strong id="calcTotal">R 0.00</strong></div>
+        <label class="switch">
+            Add 15% VAT
+            <input type="checkbox" id="vatEnabled">
+        </label>
+    </section>
+</main>
+
+<!-- ================= PREVIEW / PDF ================= -->
+<section id="preview" hidden>
+    <article class="sheet" id="sheet"></article>
+</section>
+
+<!-- ================= BOTTOM BARS ================= -->
+<nav class="bottombar" id="editorBar">
+    <div class="bottombar-inner">
+        <div class="bottombar-total"><span id="barTotalLabel">Quote total</span><strong id="barTotal">R 0.00</strong></div>
+        <button type="button" class="btn btn-primary" id="previewBtn">📄 Preview PDF</button>
+        <button type="button" class="btn btn-whatsapp" data-action="whatsapp">💬 WhatsApp</button>
+    </div>
+</nav>
+
+<nav class="bottombar" id="previewBar" hidden>
+    <div class="bottombar-inner">
+        <button type="button" class="btn btn-ghost" id="backBtn">← Edit</button>
+        <button type="button" class="btn btn-primary" id="pdfBtn">⬇ Save PDF</button>
+        <button type="button" class="btn btn-navy" data-action="share-pdf">📎 Send PDF</button>
+        <button type="button" class="btn btn-whatsapp" data-action="whatsapp">💬 WhatsApp</button>
+    </div>
+</nav>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+    const STORE_KEY = 'handymanQuoteData';
+    const VAT_RATE = 0.15;
+    const $ = (id) => document.getElementById(id);
+
+    // ---------- Helpers ----------
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function money(n) {
+        const [whole, cents] = (Math.round((Number(n) || 0) * 100) / 100).toFixed(2).split('.');
+        return 'R ' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + cents;
+    }
+
+    function isoDate(date) {
+        const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return d.toISOString().slice(0, 10);
+    }
+
+    function addDays(days) {
+        return isoDate(new Date(Date.now() + days * 86400000));
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '';
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function newId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function initials(name) {
+        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!words.length) return '🔧';
+        return words.slice(0, 2).map(w => Array.from(w)[0]).join('').toUpperCase();
+    }
+
+    // Stable brand colour from the business name, so the initials badge looks like a logo
+    function brandColor(name) {
+        let hash = 0;
+        for (const ch of String(name || '')) hash = (hash * 31 + ch.codePointAt(0)) >>> 0;
+        return name ? `hsl(${hash % 360}, 62%, 36%)` : '#2563eb';
+    }
+
+    function nextQuoteNumber(current) {
+        const match = String(current || '').match(/^(.*?)(\d+)(\D*)$/);
+        if (!match) return doc().firstNumber;
+        const [, prefix, num, suffix] = match;
+        return prefix + String(Number(num) + 1).padStart(num.length, '0') + suffix;
+    }
+
+    // Converts "082 123 4567", "+27 82 123 4567", "0027..." to "27821234567"
+    function waNumber(raw) {
+        let digits = String(raw || '').replace(/\D/g, '');
+        if (digits.startsWith('00')) digits = digits.slice(2);
+        if (digits.length === 10 && digits.startsWith('0')) digits = '27' + digits.slice(1);
+        if (digits.length === 9 && /^[6-8]/.test(digits)) digits = '27' + digits;
+        return digits.length >= 10 && digits.length <= 15 ? digits : '';
+    }
+
+    let toastTimer;
+    function toast(message) {
+        const el = $('toast');
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    // ---------- Document types ----------
+    const DOC_TYPES = {
+        quote: {
+            name: 'Quote', icon: '📝', title: 'QUOTE', firstNumber: 'QT-001', numberKey: 'quoteNumber',
+            dueLabel: 'Valid until', party: 'Quote for', totalLabel: 'TOTAL', barLabel: 'Quote total',
+            dueText: (date) => `This quote is valid until ${date}.`
+        },
+        invoice: {
+            name: 'Invoice', icon: '🧾', title: 'INVOICE', firstNumber: 'INV-001', numberKey: 'invoiceNumber',
+            dueLabel: null, party: 'Bill to', totalLabel: 'AMOUNT DUE', barLabel: 'Amount due',
+            dueText: null
+        }
+    };
+
+    // ---------- State ----------
+    const BOUND_FIELDS = ['businessName', 'contactDetails', 'vatNumber', 'notes',
+        'clientName', 'clientPhone', 'clientAddress', 'quoteDate', 'validUntil'];
+
+    function blankItem() {
+        return { id: newId(), description: '', quantity: 1, price: 0 };
+    }
+
+    function loadData() {
+        let saved = {};
+        try {
+            saved = JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+        } catch (e) {
+            saved = {};
+        }
+        const data = {
+            businessName: '', contactDetails: '', vatNumber: '', notes: '', logoData: null,
+            clientName: '', clientPhone: '', clientAddress: '',
+            docType: 'quote', quoteNumber: 'QT-001', invoiceNumber: 'INV-001',
+            quoteDate: isoDate(new Date()), validUntil: addDays(30),
+            vatEnabled: false, jobItems: [],
+            ...saved
+        };
+        data.jobItems = (Array.isArray(data.jobItems) ? data.jobItems : []).map(item => ({
+            id: String(item.id ?? newId()),
+            description: item.description || '',
+            quantity: Number(item.quantity) || 0,
+            price: Number(item.price) || 0
+        }));
+        if (!data.jobItems.length) data.jobItems.push(blankItem());
+        // Earlier invoice-only version stored the invoice number in quoteNumber
+        if (!saved.invoiceNumber && /^INV-/i.test(data.quoteNumber)) {
+            data.invoiceNumber = data.quoteNumber;
+            data.quoteNumber = 'QT-001';
+        }
+        if (!DOC_TYPES[data.docType]) data.docType = 'quote';
+        return data;
+    }
+
+    const data = loadData();
+
+    let warmTimer;
+    function save() {
+        try {
+            localStorage.setItem(STORE_KEY, JSON.stringify(data));
+        } catch (e) {
+            toast('Could not save – storage is full. Try a smaller logo.');
+        }
+        // Build the PDF in the background so the share button responds instantly
+        clearTimeout(warmTimer);
+        warmTimer = setTimeout(() => getPdfFile().catch(() => {}), 800);
+    }
+
+    const doc = () => DOC_TYPES[data.docType];
+    const docNumber = () => data[doc().numberKey];
+    // Only quotes show a "valid until" date
+    const showsValidity = () => Boolean(doc().dueLabel && data.validUntil);
+
+    function footerText() {
+        const d = doc();
+        const parts = [];
+        if (showsValidity()) parts.push(d.dueText(formatDate(data.validUntil)));
+        if (data.docType === 'invoice' && docNumber()) parts.push(`Please use ${docNumber()} as your payment reference.`);
+        parts.push('All amounts in South African Rand (ZAR).');
+        return parts.join(' ');
+    }
+
+    function totals() {
+        const subtotal = data.jobItems.reduce((sum, i) => sum + i.quantity * i.price, 0);
+        const vat = data.vatEnabled ? subtotal * VAT_RATE : 0;
+        return { subtotal, vat, total: subtotal + vat };
+    }
+
+    // ---------- Branding (logo or initials) ----------
+    function renderBrandMark(el) {
+        el.style.setProperty('--brand-color', brandColor(data.businessName));
+        el.classList.toggle('has-image', Boolean(data.logoData));
+        if (data.logoData) {
+            el.innerHTML = `<img src="${data.logoData}" alt="${escapeHtml(data.businessName || 'Logo')}">`;
+        } else {
+            el.textContent = initials(data.businessName);
+        }
+    }
+
+    function renderBranding() {
+        renderBrandMark($('appbarMark'));
+        renderBrandMark($('logoPreview'));
+        $('appbarName').textContent = data.businessName || 'Quote & Invoice Maker';
+        $('appbarSub').textContent = data.businessName ? `${doc().name} Maker` : 'Professional quotes & invoices';
+        $('businessHint').textContent = data.businessName ? '· ' + data.businessName : '· tap to set up';
+        $('logoPickerTitle').textContent = data.logoData ? 'Tap to change logo' : 'Tap to upload your logo';
+        $('logoPickerSub').textContent = data.logoData
+            ? 'Shown on every quote and invoice.'
+            : 'No logo? Your business initials are used instead.';
+        $('removeLogoBtn').hidden = !data.logoData;
+    }
+
+    function resizeImage(file, max = 480) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                const scale = Math.min(1, max / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(img.width * scale));
+                canvas.height = Math.max(1, Math.round(img.height * scale));
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(url);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('Unreadable image'));
+            };
+            img.src = url;
+        });
+    }
+
+    // ---------- Job items ----------
+    function renderItems() {
+        $('items').innerHTML = data.jobItems.map((item, index) => `
+            <div class="item" data-id="${escapeHtml(item.id)}">
+                <div class="item-head">
+                    <span class="item-no">Item ${index + 1}</span>
+                    <button type="button" class="icon-btn danger" data-action="remove" aria-label="Remove item ${index + 1}">🗑</button>
+                </div>
+                <input class="input" type="text" data-field="description" placeholder="e.g. Fix leaking kitchen tap"
+                       value="${escapeHtml(item.description)}" aria-label="Description">
+                <div class="item-grid">
+                    <div>
+                        <span class="mini-label">Qty</span>
+                        <div class="stepper">
+                            <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
+                            <input class="input" type="number" inputmode="decimal" min="0" step="any"
+                                   data-field="quantity" value="${item.quantity}" aria-label="Quantity">
+                            <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="mini-label">Price (R)</span>
+                        <input class="input" type="number" inputmode="decimal" min="0" step="0.01"
+                               data-field="price" value="${item.price || ''}" placeholder="0.00" aria-label="Unit price in Rand">
+                    </div>
+                </div>
+                <div class="line-total"><span>Line total</span><strong data-line>${money(item.quantity * item.price)}</strong></div>
+            </div>
+        `).join('');
+        updateTotals();
+    }
+
+    function findItem(el) {
+        const row = el.closest('.item');
+        return row ? { row, item: data.jobItems.find(i => i.id === row.dataset.id) } : {};
+    }
+
+    function updateTotals() {
+        const { subtotal, vat, total } = totals();
+        $('calcSubtotal').textContent = money(subtotal);
+        $('calcVat').textContent = money(vat);
+        $('calcVatRow').hidden = !data.vatEnabled;
+        $('calcTotal').textContent = money(total);
+        $('barTotal').textContent = money(total);
+    }
+
+    $('items').addEventListener('input', (e) => {
+        const field = e.target.dataset.field;
+        const { row, item } = findItem(e.target);
+        if (!field || !item) return;
+        item[field] = field === 'description' ? e.target.value : Math.max(0, Number.parseFloat(e.target.value) || 0);
+        // Update in place (no re-render) so the keyboard stays open while typing
+        row.querySelector('[data-line]').textContent = money(item.quantity * item.price);
+        updateTotals();
+        save();
+    });
+
+    $('items').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const { row, item } = findItem(btn);
+        if (!item) return;
+
+        if (btn.dataset.action === 'remove') {
+            if ((item.description || item.price) && !confirm(`Remove "${item.description || 'this item'}"?`)) return;
+            data.jobItems = data.jobItems.filter(i => i !== item);
+            if (!data.jobItems.length) data.jobItems.push(blankItem());
+            renderItems();
+            save();
+            return;
+        }
+
+        const step = btn.dataset.action === 'inc' ? 1 : -1;
+        item.quantity = Math.max(0, Math.round((item.quantity + step) * 100) / 100);
+        row.querySelector('[data-field="quantity"]').value = item.quantity;
+        row.querySelector('[data-line]').textContent = money(item.quantity * item.price);
+        updateTotals();
+        save();
+    });
+
+    $('addItemBtn').addEventListener('click', () => {
+        data.jobItems.push(blankItem());
+        renderItems();
+        save();
+        const rows = $('items').querySelectorAll('.item');
+        const last = rows[rows.length - 1];
+        last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        last.querySelector('[data-field="description"]').focus({ preventScroll: true });
+    });
+
+    // ---------- Form fields ----------
+    function fillForm() {
+        BOUND_FIELDS.forEach(key => { $(key).value = data[key] || ''; });
+        $('vatEnabled').checked = Boolean(data.vatEnabled);
+        $('businessCard').open = !data.businessName;
+        applyDocType();
+    }
+
+    // Switches every label between Quote and Invoice; each type keeps its own number
+    function applyDocType() {
+        const d = doc();
+        document.querySelectorAll('[data-doc]').forEach(btn => {
+            btn.setAttribute('aria-pressed', String(btn.dataset.doc === data.docType));
+        });
+        $('docCardTitle').textContent = `${d.icon} ${d.name}`;
+        $('docNumberLabel').textContent = `${d.name} number`;
+        $('docNumber').placeholder = d.firstNumber;
+        $('docNumber').value = docNumber() || '';
+        $('docDateLabel').textContent = `${d.name} date`;
+        $('docDueLabel').textContent = d.dueLabel || '';
+        $('dueField').hidden = !d.dueLabel;
+        $('dueField').parentElement.style.gridTemplateColumns = d.dueLabel ? '' : '1fr';
+        $('barTotalLabel').textContent = d.barLabel;
+        $('previewBtn').textContent = `📄 Preview ${d.name}`;
+        renderBranding();
+    }
+
+    document.querySelectorAll('[data-doc]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (data.docType === btn.dataset.doc) return;
+            data.docType = btn.dataset.doc;
+            applyDocType();
+            if (!$('preview').hidden) renderSheet();
+            save();
+            toast(`Now making a${data.docType === 'invoice' ? 'n' : ''} ${doc().name.toLowerCase()} – your items are kept`);
+        });
+    });
+
+    $('docNumber').addEventListener('input', (e) => {
+        data[doc().numberKey] = e.target.value;
+        save();
+    });
+
+    document.querySelectorAll('[data-bind]').forEach(el => {
+        el.addEventListener('input', () => {
+            data[el.dataset.bind] = el.value;
+            if (el.dataset.bind === 'businessName') renderBranding();
+            save();
+        });
+    });
+
+    $('vatEnabled').addEventListener('change', (e) => {
+        data.vatEnabled = e.target.checked;
+        updateTotals();
+        save();
+    });
+
+    $('logoPicker').addEventListener('click', () => $('logoInput').click());
+
+    $('logoInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        try {
+            data.logoData = await resizeImage(file);
+            renderBranding();
+            save();
+            toast('Logo saved ✓');
+        } catch (err) {
+            toast('That image could not be read. Try a PNG or JPG.');
+        }
+    });
+
+    $('removeLogoBtn').addEventListener('click', () => {
+        data.logoData = null;
+        renderBranding();
+        save();
+    });
+
+    $('newQuoteBtn').addEventListener('click', () => {
+        const name = doc().name.toLowerCase();
+        if (!confirm(`Start a new ${name}? Client details and items will be cleared. Your business details stay.`)) return;
+        Object.assign(data, {
+            clientName: '', clientPhone: '', clientAddress: '',
+            [doc().numberKey]: nextQuoteNumber(docNumber()),
+            quoteDate: isoDate(new Date()),
+            validUntil: addDays(30),
+            jobItems: [blankItem()]
+        });
+        save();
+        showEditor();
+        fillForm();
+        renderItems();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast(`New ${name} ${docNumber()}`);
+    });
+
+    // ---------- Quote / invoice sheet ----------
+    function filledItems() {
+        return data.jobItems.filter(i => i.description.trim() || i.price);
+    }
+
+    function renderSheet() {
+        const items = filledItems();
+        const { subtotal, vat, total } = totals();
+        const d = doc();
+        const mark = document.createElement('div');
+        mark.className = 'brand-mark';
+        renderBrandMark(mark);
+
+        const rows = items.length
+            ? items.map((i, n) => `
+                <tr>
+                    <td>${n + 1}</td>
+                    <td>${escapeHtml(i.description || 'Item')}</td>
+                    <td class="num">${i.quantity}</td>
+                    <td class="num">${money(i.price)}</td>
+                    <td class="num">${money(i.quantity * i.price)}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:#6b7280">No items added</td></tr>';
+
+        $('sheet').innerHTML = `
+            <div class="q-head">
+                <div class="q-brand">
+                    ${mark.outerHTML}
+                    <div>
+                        <h2>${escapeHtml(data.businessName || 'Your Business Name')}</h2>
+                        ${data.contactDetails ? `<p>${escapeHtml(data.contactDetails)}</p>` : ''}
+                        ${data.vatNumber ? `<p>VAT No: ${escapeHtml(data.vatNumber)}</p>` : ''}
+                    </div>
+                </div>
+                <div class="q-title">
+                    <h1>${d.title}</h1>
+                    <div class="q-meta">No: <b>${escapeHtml(docNumber() || '—')}</b></div>
+                    <div class="q-meta">Date: <b>${escapeHtml(formatDate(data.quoteDate))}</b></div>
+                    ${showsValidity() ? `<div class="q-meta">${d.dueLabel}: <b>${escapeHtml(formatDate(data.validUntil))}</b></div>` : ''}
+                </div>
+            </div>
+
+            <div class="q-billto">
+                <div class="q-label">${d.party}</div>
+                <strong>${escapeHtml(data.clientName || 'Client')}</strong>
+                ${data.clientPhone ? `<p>${escapeHtml(data.clientPhone)}</p>` : ''}
+                ${data.clientAddress ? `<p>${escapeHtml(data.clientAddress)}</p>` : ''}
+            </div>
+
+            <div class="q-table-wrap">
+                <table class="q-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th class="num">Qty</th>
+                            <th class="num">Unit price</th>
+                            <th class="num">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+
+            <div class="q-totals">
+                <div><span>Subtotal</span><span>${money(subtotal)}</span></div>
+                ${data.vatEnabled ? `<div><span>VAT (15%)</span><span>${money(vat)}</span></div>` : ''}
+                <div class="grand"><span>${d.totalLabel}</span><span>${money(total)}</span></div>
+            </div>
+
+            ${data.notes ? `
+            <div class="q-notes">
+                <div class="q-label">Payment details &amp; terms</div>
+                <p>${escapeHtml(data.notes)}</p>
+            </div>` : ''}
+
+            <div class="q-foot">
+                <strong>Thank you for your business!</strong>
+                ${escapeHtml(footerText())}
+            </div>
+        `;
+    }
+
+    function showPreview() {
+        renderSheet();
+        getPdfFile().catch(() => {});
+        $('editor').hidden = true;
+        $('editorBar').hidden = true;
+        $('preview').hidden = false;
+        $('previewBar').hidden = false;
+        window.scrollTo(0, 0);
+    }
+
+    function showEditor() {
+        $('preview').hidden = true;
+        $('previewBar').hidden = true;
+        $('editor').hidden = false;
+        $('editorBar').hidden = false;
+    }
+
+    // Ctrl+P / browser menu print also produces the quote / invoice
+    window.addEventListener('beforeprint', renderSheet);
+
+    // ---------- Real PDF file: drawn on a canvas, no libraries, works offline ----------
+    const PAGE_W = 595.28;
+    const PAGE_H = 841.89;
+    const MARGIN = 40;
+    const PDF_SCALE = 2.5;
+    const PDF_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+    const PDF_COLORS = { navy: '#1e3a5f', blue: '#2563eb', text: '#1f2937', muted: '#6b7280', line: '#e5e7eb', soft: '#f3f6fa' };
+
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
+    function wrapText(ctx, str, maxWidth) {
+        const lines = [];
+        String(str || '').split('\n').forEach(paragraph => {
+            let line = '';
+            for (let word of paragraph.split(' ')) {
+                // Break words that are wider than the column on their own
+                while (word.length > 1 && ctx.measureText(word).width > maxWidth) {
+                    let cut = word.length - 1;
+                    while (cut > 1 && ctx.measureText(word.slice(0, cut)).width > maxWidth) cut--;
+                    if (line) lines.push(line);
+                    line = '';
+                    lines.push(word.slice(0, cut));
+                    word = word.slice(cut);
+                }
+                const candidate = line ? line + ' ' + word : word;
+                if (line && ctx.measureText(candidate).width > maxWidth) {
+                    lines.push(line);
+                    line = word;
+                } else {
+                    line = candidate;
+                }
+            }
+            lines.push(line);
+        });
+        return lines;
+    }
+
+    async function renderPdfPages() {
+        const d = doc();
+        const items = filledItems();
+        const { subtotal, vat, total } = totals();
+        const logo = data.logoData ? await loadImage(data.logoData).catch(() => null) : null;
+        const C = PDF_COLORS;
+        const right = PAGE_W - MARGIN;
+        const contentW = right - MARGIN;
+        const bottom = PAGE_H - MARGIN - 18;
+        const pages = [];
+        let ctx;
+        let y;
+
+        const font = (size, weight = 400) => `${weight} ${size}px ${PDF_FONT}`;
+        const text = (str, x, yy, { size = 10, weight = 400, color = C.text, align = 'left' } = {}) => {
+            ctx.font = font(size, weight);
+            ctx.fillStyle = color;
+            ctx.textAlign = align;
+            ctx.fillText(str, x, yy);
+        };
+        const box = (x, yy, w, h, r, color) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            if (ctx.roundRect && r) ctx.roundRect(x, yy, w, h, r); else ctx.rect(x, yy, w, h);
+            ctx.fill();
+        };
+        const newPage = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(PAGE_W * PDF_SCALE);
+            canvas.height = Math.round(PAGE_H * PDF_SCALE);
+            ctx = canvas.getContext('2d');
+            ctx.scale(PDF_SCALE, PDF_SCALE);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, PAGE_W, PAGE_H);
+            pages.push(canvas);
+            y = MARGIN;
+        };
+        const ensureSpace = (height, onNewPage) => {
+            if (y + height > bottom) {
+                newPage();
+                if (onNewPage) onNewPage();
+            }
+        };
+
+        newPage();
+
+        // Header: logo (or initials badge) + business details
+        const mark = 58;
+        if (logo) {
+            const s = Math.min(mark / logo.width, mark / logo.height);
+            ctx.drawImage(logo, MARGIN + (mark - logo.width * s) / 2, y + (mark - logo.height * s) / 2, logo.width * s, logo.height * s);
+        } else {
+            box(MARGIN, y, mark, mark, 12, brandColor(data.businessName));
+            text(initials(data.businessName), MARGIN + mark / 2, y + mark / 2 + 8, { size: 22, weight: 800, color: '#fff', align: 'center' });
+        }
+
+        const infoX = MARGIN + mark + 14;
+        const infoW = right - 180 - infoX;
+        let leftY = y + 17;
+        ctx.font = font(17, 700);
+        wrapText(ctx, data.businessName || 'Your Business Name', infoW).forEach(line => {
+            text(line, infoX, leftY, { size: 17, weight: 700, color: C.navy });
+            leftY += 20;
+        });
+        ctx.font = font(9.5);
+        const contact = data.contactDetails ? wrapText(ctx, data.contactDetails, infoW) : [];
+        if (data.vatNumber) contact.push(`VAT No: ${data.vatNumber}`);
+        contact.forEach(line => {
+            text(line, infoX, leftY, { size: 9.5, color: C.muted });
+            leftY += 13;
+        });
+
+        // Header: document title + number/dates
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+        text(d.title, right, y + 22, { size: 24, weight: 800, color: C.blue, align: 'right' });
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        const meta = [['No', docNumber() || '—'], ['Date', formatDate(data.quoteDate)]];
+        if (showsValidity()) meta.push([d.dueLabel, formatDate(data.validUntil)]);
+        let rightY = y + 42;
+        meta.forEach(([label, value]) => {
+            ctx.font = font(10, 700);
+            const valueW = ctx.measureText(value).width;
+            text(value, right, rightY, { size: 10, weight: 700, align: 'right' });
+            text(`${label}: `, right - valueW, rightY, { size: 10, color: C.muted, align: 'right' });
+            rightY += 15;
+        });
+
+        y = Math.max(y + mark, leftY - 8, rightY - 8) + 14;
+        box(MARGIN, y, contentW, 3, 0, C.blue);
+        y += 20;
+
+        // Client box
+        ctx.font = font(10);
+        const clientLines = [data.clientPhone, data.clientAddress].filter(Boolean).flatMap(t => wrapText(ctx, t, contentW - 30));
+        const clientH = 44 + clientLines.length * 13;
+        box(MARGIN, y, contentW, clientH, 4, C.soft);
+        box(MARGIN, y, 3, clientH, 0, C.navy);
+        text(d.party.toUpperCase(), MARGIN + 14, y + 16, { size: 8, weight: 700, color: C.muted });
+        text(data.clientName || 'Client', MARGIN + 14, y + 32, { size: 12.5, weight: 700, color: C.navy });
+        clientLines.forEach((line, i) => text(line, MARGIN + 14, y + 46 + i * 13, { color: '#4b5563' }));
+        y += clientH + 18;
+
+        // Items table
+        const col = { num: MARGIN + 8, desc: MARGIN + 30, qtyR: MARGIN + 330, unitR: MARGIN + 425, amtR: right - 8 };
+        const descW = col.qtyR - 40 - col.desc;
+        const tableHeader = () => {
+            box(MARGIN, y, contentW, 24, 0, C.navy);
+            const h = { size: 8.5, weight: 700, color: '#fff' };
+            text('#', col.num, y + 15.5, h);
+            text('DESCRIPTION', col.desc, y + 15.5, h);
+            text('QTY', col.qtyR, y + 15.5, { ...h, align: 'right' });
+            text('UNIT PRICE', col.unitR, y + 15.5, { ...h, align: 'right' });
+            text('AMOUNT', col.amtR, y + 15.5, { ...h, align: 'right' });
+            y += 24;
+        };
+        tableHeader();
+        if (!items.length) {
+            text('No items added', PAGE_W / 2, y + 20, { color: C.muted, align: 'center' });
+            y += 32;
+        }
+        items.forEach((item, n) => {
+            ctx.font = font(10);
+            const lines = wrapText(ctx, item.description || 'Item', descW);
+            const rowH = 12 + lines.length * 13;
+            ensureSpace(rowH, tableHeader);
+            if (n % 2 === 1) box(MARGIN, y, contentW, rowH, 0, C.soft);
+            const base = y + 16;
+            text(String(n + 1), col.num, base, { color: C.muted });
+            lines.forEach((line, i) => text(line, col.desc, base + i * 13));
+            text(String(item.quantity), col.qtyR, base, { align: 'right' });
+            text(money(item.price), col.unitR, base, { align: 'right' });
+            text(money(item.quantity * item.price), col.amtR, base, { weight: 600, align: 'right' });
+            y += rowH;
+            box(MARGIN, y - 0.75, contentW, 0.75, 0, C.line);
+        });
+        y += 14;
+
+        // Totals
+        const totalRows = [['Subtotal', subtotal]];
+        if (data.vatEnabled) totalRows.push(['VAT (15%)', vat]);
+        ensureSpace(totalRows.length * 20 + 44);
+        const totalsX = right - 220;
+        totalRows.forEach(([label, value]) => {
+            text(label, totalsX + 12, y + 12, { color: '#4b5563' });
+            text(money(value), right - 12, y + 12, { align: 'right' });
+            y += 20;
+        });
+        y += 4;
+        box(totalsX, y, 220, 36, 5, C.navy);
+        text(d.totalLabel, totalsX + 12, y + 23, { size: 12, weight: 800, color: '#fff' });
+        text(money(total), right - 12, y + 23, { size: 14, weight: 800, color: '#fff', align: 'right' });
+        y += 58;
+
+        // Banking details / terms
+        if (data.notes) {
+            ctx.font = font(10);
+            const noteLines = wrapText(ctx, data.notes, contentW - 28);
+            const noteH = 34 + noteLines.length * 13;
+            ensureSpace(noteH);
+            ctx.strokeStyle = C.line;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(MARGIN + 0.5, y + 0.5, contentW - 1, noteH - 1, 5); else ctx.rect(MARGIN + 0.5, y + 0.5, contentW - 1, noteH - 1);
+            ctx.stroke();
+            text('PAYMENT DETAILS & TERMS', MARGIN + 14, y + 17, { size: 8, weight: 700, color: C.muted });
+            noteLines.forEach((line, i) => text(line, MARGIN + 14, y + 33 + i * 13));
+            y += noteH + 22;
+        }
+
+        // Footer
+        ctx.font = font(9);
+        const footLines = wrapText(ctx, footerText(), contentW);
+        ensureSpace(34 + footLines.length * 12);
+        box(MARGIN, y, contentW, 0.75, 0, C.line);
+        text('Thank you for your business!', PAGE_W / 2, y + 22, { size: 11, weight: 700, color: C.navy, align: 'center' });
+        footLines.forEach((line, i) => text(line, PAGE_W / 2, y + 37 + i * 12, { size: 9, color: C.muted, align: 'center' }));
+
+        if (pages.length > 1) {
+            pages.forEach((canvas, i) => {
+                ctx = canvas.getContext('2d');
+                text(`Page ${i + 1} of ${pages.length}`, PAGE_W / 2, PAGE_H - MARGIN + 12, { size: 8.5, color: C.muted, align: 'center' });
+            });
+        }
+        return pages;
+    }
+
+    function canvasToJpeg(canvas) {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (!blob) return reject(new Error('Could not render page'));
+                blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf)), reject);
+            }, 'image/jpeg', 0.92);
+        });
+    }
+
+    // Minimal PDF writer: one full-page JPEG image per page
+    function buildPdf(jpegs, pxWidth, pxHeight, title) {
+        const encoder = new TextEncoder();
+        const chunks = [];
+        const offsets = [];
+        let length = 0;
+        const write = (part) => {
+            const bytes = typeof part === 'string' ? encoder.encode(part) : part;
+            chunks.push(bytes);
+            length += bytes.length;
+        };
+        const obj = (n, body) => {
+            offsets[n] = length;
+            write(`${n} 0 obj\n${body}\nendobj\n`);
+        };
+        const pageObj = (i) => 4 + i * 3;
+        const size = pageObj(jpegs.length);
+        const safeTitle = title.replace(/[^\x20-\x7E]/g, '').replace(/[\\()]/g, '\\$&');
+
+        write('%PDF-1.4\n%âãÏÓ\n');
+        obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+        obj(2, `<< /Type /Pages /Kids [${jpegs.map((_, i) => `${pageObj(i)} 0 R`).join(' ')}] /Count ${jpegs.length} >>`);
+        obj(3, `<< /Title (${safeTitle}) /Producer (Handyman Quote and Invoice Maker) >>`);
+        jpegs.forEach((jpeg, i) => {
+            const p = pageObj(i);
+            const content = `q ${PAGE_W} 0 0 ${PAGE_H} 0 0 cm /Im0 Do Q`;
+            obj(p, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_W} ${PAGE_H}] /Resources << /XObject << /Im0 ${p + 2} 0 R >> >> /Contents ${p + 1} 0 R >>`);
+            obj(p + 1, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+            offsets[p + 2] = length;
+            write(`${p + 2} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${pxWidth} /Height ${pxHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
+            write(jpeg);
+            write('\nendstream\nendobj\n');
+        });
+        const xref = length;
+        let table = `xref\n0 ${size}\n0000000000 65535 f \n`;
+        for (let n = 1; n < size; n++) table += `${String(offsets[n]).padStart(10, '0')} 00000 n \n`;
+        write(table);
+        write(`trailer\n<< /Size ${size} /Root 1 0 R /Info 3 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+        return new Blob(chunks, { type: 'application/pdf' });
+    }
+
+    function pdfFileName() {
+        const base = [docNumber(), data.clientName].filter(Boolean).join(' ') || doc().name;
+        return base.replace(/[\\/:*?"<>|]+/g, '').trim() + '.pdf';
+    }
+
+    let pdfCache = { key: '', promise: null };
+    function getPdfFile() {
+        const key = JSON.stringify(data);
+        if (pdfCache.key !== key) {
+            const name = pdfFileName();
+            const promise = renderPdfPages()
+                .then(pages => Promise.all(pages.map(canvasToJpeg)).then(jpegs => [pages[0], jpegs]))
+                .then(([first, jpegs]) => new File([buildPdf(jpegs, first.width, first.height, name.slice(0, -4))], name, { type: 'application/pdf' }));
+            pdfCache = { key, promise };
+            promise.catch(() => { if (pdfCache.promise === promise) pdfCache = { key: '', promise: null }; });
+        }
+        return pdfCache.promise;
+    }
+
+    function downloadFile(file) {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    async function savePdf() {
+        try {
+            downloadFile(await getPdfFile());
+            toast('PDF saved ✓');
+        } catch (err) {
+            toast('Could not create the PDF');
+        }
+    }
+
+    $('previewBtn').addEventListener('click', () => {
+        if (!filledItems().length) toast('Tip: add at least one job item');
+        showPreview();
+    });
+    $('backBtn').addEventListener('click', showEditor);
+    $('pdfBtn').addEventListener('click', savePdf);
+
+    // ---------- WhatsApp ----------
+    function whatsappText() {
+        const { subtotal, vat, total } = totals();
+        const d = doc();
+        const plainMoney = (n) => money(n).replaceAll(' ', ' ');
+        const lines = [
+            `*${d.title} ${docNumber() || ''}*`.trim(),
+            `From: *${data.businessName || 'Handyman Services'}*`,
+            `Date: ${formatDate(data.quoteDate)}`,
+            '',
+            data.clientName ? `Hi ${data.clientName},` : 'Hi,',
+            `Please see your ${d.name.toLowerCase()} below:`,
+            '',
+            ...filledItems().map((i, n) => `${n + 1}. ${i.description || 'Item'}\n    ${i.quantity} × ${plainMoney(i.price)} = ${plainMoney(i.quantity * i.price)}`),
+            '',
+            ...(data.vatEnabled ? [`Subtotal: ${plainMoney(subtotal)}`, `VAT (15%): ${plainMoney(vat)}`] : []),
+            `*${d.totalLabel}: ${plainMoney(total)}*`
+        ];
+        if (showsValidity()) lines.push(`_${d.dueText(formatDate(data.validUntil))}_`);
+        if (data.notes) lines.push('', data.notes);
+        if (data.contactDetails) lines.push('', data.contactDetails);
+        return lines.join('\n');
+    }
+
+    function openWhatsAppChat(message) {
+        const phone = waNumber(data.clientPhone);
+        if (data.clientPhone && !phone) toast('Client number looks wrong – choose the contact in WhatsApp');
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+    }
+
+    // WhatsApp button: text message with the items and total (works on every device)
+    function shareWhatsApp() {
+        if (!filledItems().length) {
+            toast('Add at least one job item first');
+            return;
+        }
+        openWhatsAppChat(whatsappText());
+    }
+
+    // Send PDF button: phones open the share sheet (WhatsApp, email, …) with the PDF attached.
+    // Where file sharing isn't available (computers, non-https), the PDF is downloaded instead.
+    async function sendPdf() {
+        if (!filledItems().length) {
+            toast('Add at least one job item first');
+            return;
+        }
+        let file;
+        try {
+            file = await getPdfFile();
+        } catch (err) {
+            toast('Could not create the PDF');
+            return;
+        }
+
+        const d = doc();
+        const caption = `${data.clientName ? `Hi ${data.clientName}, please` : 'Please'} find your ${d.name.toLowerCase()} ${docNumber() || ''} attached. ${d.barLabel}: ${money(totals().total).replaceAll('\u00a0', ' ')}`;
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], text: caption });
+            } catch (err) {
+                if (err.name === 'NotAllowedError') {
+                    toast('PDF is ready – tap Send PDF again');
+                } else if (err.name !== 'AbortError') {
+                    downloadFile(file);
+                    toast('Sharing failed – PDF downloaded instead');
+                }
+            }
+            return;
+        }
+
+        downloadFile(file);
+        toast('PDF downloaded – attach it in WhatsApp or email 📎');
+    }
+
+    document.querySelectorAll('[data-action="whatsapp"]').forEach(btn => btn.addEventListener('click', shareWhatsApp));
+    document.querySelectorAll('[data-action="share-pdf"]').forEach(btn => btn.addEventListener('click', sendPdf));
+
+    // ---------- PWA install + offline ----------
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installPrompt = e;
+        $('installBtn').hidden = false;
+    });
+
+    $('installBtn').addEventListener('click', async () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+        installPrompt = null;
+        $('installBtn').hidden = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        $('installBtn').hidden = true;
+        toast('Installed! Open Quote & Invoice Maker from your home screen.');
+    });
+
+    window.addEventListener('offline', () => toast('You are offline – the app still works'));
+
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker failed', err));
+        });
+    }
+
+    // ---------- Start ----------
+    fillForm();
+    renderBranding();
+    renderItems();
+</script>
+</body>
+</html>
